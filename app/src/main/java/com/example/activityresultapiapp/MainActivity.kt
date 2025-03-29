@@ -1,11 +1,15 @@
 package com.example.activityresultapiapp
 
-import android.app.ComponentCaller
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
@@ -20,51 +24,30 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initViews()
 
+        val contractUserName = ActivityResultContracts.StartActivityForResult()
+        val launcherUserName = registerForActivityResult(contractUserName) {
+            if (it.resultCode == RESULT_OK) {
+                usernameTextView.text = it.data?.getStringExtra(UsernameActivity.EXTRA_USERNAME)
+            }
+        }
+
+        val galleryLauncher =
+            registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                try {
+                    imageFromGalleryImageView.setImageURI(uri)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+
         getUsernameButton.setOnClickListener {
-
-            UsernameActivity.newIntent(this).apply {
-                startActivityForResult(this, RC_USERNAME)
-                // Тут указываем Request код, чтобы понимать какой объект вызывается, потому что таких методов будет несколько
-                // По данному коду мы поймем какие данные нам вернул метод
-                // Мы будем тут ожидать результат с кодом 100
-            }
-
-            //TODO get username
+            launcherUserName.launch(UsernameActivity.newIntent(this))
         }
+
         getImageButton.setOnClickListener {
-            // Это неявный интент на открытие галереи
-            Intent(Intent.ACTION_PICK).apply {
-                type = "image/*" // MIME types - указываем какой тип хотим, чтобы был в интенте
-                startActivityForResult(this, RC_IMAGE)
-            }
-            //TODO get image
+            galleryLauncher.launch(INTENT_TYPE_IMAGE)
         }
-    }
-
-    // Метод, который позволяет получить данные из другой Активити
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        intent: Intent?,
-        caller: ComponentCaller
-    ) {
-        super.onActivityResult(requestCode, resultCode, intent, caller)
-
-        if (resultCode == RESULT_OK) {
-            when (requestCode) {
-                RC_USERNAME -> {
-                    val username = intent?.getStringExtra(UsernameActivity.EXTRA_USERNAME) ?: ""
-                    usernameTextView.text = username
-                }
-
-                RC_IMAGE -> {
-                    val imageUri = intent?.data
-                    imageFromGalleryImageView.setImageURI(imageUri)
-                }
-            }
-        }
-
-
     }
 
     private fun initViews() {
@@ -75,7 +58,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val RC_USERNAME = 100
-        private const val RC_IMAGE = 101
+        private const val INTENT_TYPE_IMAGE = "image/*"
+
+        private fun log(text: String) {
+            Log.d("MainActivity", text)
+        }
     }
 }
