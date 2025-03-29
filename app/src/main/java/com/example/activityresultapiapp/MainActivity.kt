@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
@@ -23,67 +24,29 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initViews()
 
-        val contractText = object : ActivityResultContract<Intent, String?>() {
-
-            override fun createIntent(
-                context: Context,
-                input: Intent
-            ): Intent {
-                return input
+        val contractUserName = ActivityResultContracts.StartActivityForResult()
+        val launcherUserName = registerForActivityResult(contractUserName) {
+            if (it.resultCode == RESULT_OK) {
+                usernameTextView.text = it.data?.getStringExtra(UsernameActivity.EXTRA_USERNAME)
             }
+        }
 
-            override fun parseResult(
-                resultCode: Int,
-                intent: Intent?
-            ): String? {
-
-                if (resultCode == RESULT_OK) {
-                    return intent?.getStringExtra(UsernameActivity.EXTRA_USERNAME)
+        val galleryLauncher =
+            registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                try {
+                    imageFromGalleryImageView.setImageURI(uri)
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-
-                return null
             }
-        }
-
-        val launcherText = registerForActivityResult(contractText) { text ->
-            usernameTextView.text = text
-        }
-
-        val contractImage = object : ActivityResultContract<Intent, Uri?>() {
-            override fun createIntent(
-                context: Context,
-                input: Intent
-            ): Intent {
-                return input
-            }
-
-            override fun parseResult(
-                resultCode: Int,
-                intent: Intent?
-            ): Uri? {
-                if (resultCode == RESULT_OK) {
-                    return intent?.data
-                }
-                return null
-            }
-        }
-
-        val launcherImage = registerForActivityResult(contractImage) { uri ->
-            imageFromGalleryImageView.setImageURI(uri)
-        }
-
 
 
         getUsernameButton.setOnClickListener {
-            launcherText.launch(UsernameActivity.newIntent(this))
+            launcherUserName.launch(UsernameActivity.newIntent(this))
         }
 
         getImageButton.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK).apply {
-                type =
-                    INTENT_TYPE_IMAGE
-            }
-            launcherImage.launch(intent)
+            galleryLauncher.launch(INTENT_TYPE_IMAGE)
         }
     }
 
@@ -95,11 +58,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val RC_USERNAME = 100
-        private const val RC_IMAGE = 101
         private const val INTENT_TYPE_IMAGE = "image/*"
 
-        fun log(text: String) {
+        private fun log(text: String) {
             Log.d("MainActivity", text)
         }
     }
