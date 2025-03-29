@@ -56,20 +56,21 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
-        // Указываем 2 типа -
-        // 1. Какие данные понадобятся для запуска Активити (в нашем случае мы передаём интент)
-        // 2. Какие данные будем получать (В нашем случае это строка String)
+
+        // Создаём лончер, где мы подписываемся на задачу и когда она будет выполнена, то сработает коллбэк
+        // Передаём в него наш контракт и создаём коллбэк, Сюда прилетит строка
+        val launcher = registerForActivityResult(contract) {
+            if (!it.isNullOrBlank()) { // Если строка не пустая и не равна null
+                usernameTextView.text = it
+            }
+        }
+
+
 
         getUsernameButton.setOnClickListener {
 
-            UsernameActivity.newIntent(this).apply {
-                startActivityForResult(this, RC_USERNAME)
-                // Тут указываем Request код, чтобы понимать какой объект вызывается, потому что таких методов будет несколько
-                // По данному коду мы поймем какие данные нам вернул метод
-                // Мы будем тут ожидать результат с кодом 100
-            }
+            launcher.launch(UsernameActivity.newIntent(this))
 
-            //TODO get username
         }
         getImageButton.setOnClickListener {
             // Это неявный интент на открытие галереи
