@@ -16,6 +16,7 @@ class UsernameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_username)
         initViews()
+
         saveUsernameButton.setOnClickListener {
             val username = usernameEditText.text.trim().toString()
             saveUsername(username)
@@ -24,7 +25,12 @@ class UsernameActivity : AppCompatActivity() {
     }
 
     private fun saveUsername(username: String) {
-        //TODO save username
+        Intent().apply {
+            putExtra(EXTRA_USERNAME, username)
+            setResult(RESULT_OK, this)
+        }
+        // Если у нас все пошло окей, то возвращаем Окей
+        // Возвращаем тут интент с параметрами
     }
 
     private fun initViews() {
@@ -33,8 +39,9 @@ class UsernameActivity : AppCompatActivity() {
     }
 
     companion object {
-
         fun newIntent(context: Context) = Intent(context, UsernameActivity::class.java)
+
+        const val EXTRA_USERNAME = "username"
     }
 
 }
