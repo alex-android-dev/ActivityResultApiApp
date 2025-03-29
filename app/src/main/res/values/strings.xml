@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">ActivityResultApiApp</string>
+    <string name="app_name">ActivityResultApi</string>
+    <string name="get_user_name">Get username</string>
+    <string name="here_will_be_username">Here will be username</string>
+    <string name="get_image">Get image</string>
+    <string name="type_your_name_here">Type your name here:</string>
+    <string name="save">Save</string>
 </resources>
